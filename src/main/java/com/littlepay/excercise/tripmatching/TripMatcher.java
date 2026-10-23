@@ -1,7 +1,7 @@
 package com.littlepay.excercise.tripmatching;
 
 import com.littlepay.excercise.model.Tap;
-import com.littlepay.excercise.model.Trip;
+import com.littlepay.excercise.model.trips.Trip;
 
 import java.util.List;
 
