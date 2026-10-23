@@ -8,8 +8,7 @@ import java.util.List;
 /** The state machine: turns one ordered sequence of taps into trips **/
 public class TripMatcher {
 
-    public List<Trip> matchTrips(List<Tap> tapsFormASingleUser){
-        //TODO : make sure all the taps are from a single user
+    public List<Trip> matchTrips(List<Tap> tapsFromASingleUser){
         throw new UnsupportedOperationException("Not yet implemented");
     }
 }
