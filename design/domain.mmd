@@ -1,0 +1,25 @@
+---
+title: Domain
+---
+flowchart LR
+    Rider([Rider]) -->|taps card on a bus| Tap[Tap<br/>time · ON/OFF · stop · bus · company · PAN]
+    Tap -->|grouped by PAN| Card[Card's taps]
+    Card -->|sorted by time,<br/>ON before OFF at the same time| Matching{{Trip matching rules}}
+
+    Matching --> Completed[Completed trip<br/>ON then OFF at another stop]
+    Matching --> Cancelled[Cancelled trip<br/>ON then OFF at the same stop]
+    Matching --> Incomplete[Incomplete trip<br/>ON with no OFF]
+    Matching --> Unmatched[Unmatched trip<br/>can't be charged]
+
+    Fares[(Fare table · AUD<br/>one fare per stop pair,<br/>both directions)] --> Pricing{{Pricing rules}}
+    Completed --> Pricing
+    Cancelled --> Pricing
+    Incomplete --> Pricing
+
+    Pricing -->|fare between the stops| Charged[Charged trip]
+    Pricing -->|max fare from the tap on stop| Charged
+    Pricing -->|$0.00| Charged
+    Pricing -->|no fare for the stops| Unmatched
+
+    Charged --> Output[/trips.csv/]
+    Unmatched --> Log[/Log: reason + masked card/]

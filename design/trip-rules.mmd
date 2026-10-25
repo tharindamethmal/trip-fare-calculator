@@ -1,0 +1,28 @@
+---
+title: Trip rules (one card's taps, in time order)
+---
+stateDiagram-v2
+    direction LR
+    [*] --> NotRiding
+
+    NotRiding --> Riding : tap ON at stop A
+    NotRiding --> NotRiding : tap OFF → Unmatched (no tap on)
+
+    Riding --> NotRiding : tap OFF at stop B → Completed, fare A↔B
+    Riding --> NotRiding : tap OFF at stop A → Cancelled, $0.00
+    Riding --> Riding : tap ON again → Incomplete, max fare from A
+    Riding --> [*] : no more taps → Incomplete, max fare from A
+    NotRiding --> [*]
+
+    note right of Riding
+        No time limit: a tap off days later
+        still completes the trip.
+        Bus and company are ignored;
+        the trip takes them from the tap on.
+    end note
+
+    note left of NotRiding
+        Any trip whose stops have no fare
+        becomes Unmatched (no fare),
+        is logged and is not charged.
+    end note

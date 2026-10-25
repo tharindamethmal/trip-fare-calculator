@@ -37,6 +37,16 @@ java -jar target/trip-fare-calculator-1.0-SNAPSHOT.jar sample-taps.csv trips.csv
 mvn test
 ```
 
+## Design
+
+### Domain ([source](design/domain.mmd))
+
+![Domain](design/domain.png)
+
+### Trip rules ([source](design/trip-rules.mmd))
+
+![Trip rules](design/trip-rules.png)
+
 ## Assumptions
 
 - The taps file is well formed and has no missing data
