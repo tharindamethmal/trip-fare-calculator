@@ -54,10 +54,20 @@ public class CsvFareProvider implements FareProvider {
     }
 
     @Override
+    public boolean servesStop(BigInteger stopId) {
+        return fares.keySet().stream().anyMatch(stops -> stops.contains(stopId));
+    }
+
+    @Override
+    public boolean hasFareBetween(BigInteger from, BigInteger to) {
+        return fares.containsKey(StopPair.of(from, to));
+    }
+
+    @Override
     public Money fareBetween(BigInteger from, BigInteger to) {
         Money fare = fares.get(StopPair.of(from, to));
         if (fare == null) {
-            throw new IllegalArgumentException("No fare between stops " + from + " and " + to);
+            throw new NoFareException("No fare between stops " + from + " and " + to);
         }
         return fare;
     }
@@ -68,7 +78,7 @@ public class CsvFareProvider implements FareProvider {
                 .filter(entry -> entry.getKey().contains(from))
                 .map(Map.Entry::getValue)
                 .max(Comparator.comparing(Money::amount))
-                .orElseThrow(() -> new IllegalArgumentException("No fares from stop " + from));
+                .orElseThrow(() -> new NoFareException("No fares from stop " + from));
     }
 
     private static Map<StopPair, Money> load(Path faresFile, Currency currency) {

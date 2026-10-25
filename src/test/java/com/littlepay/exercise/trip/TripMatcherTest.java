@@ -48,10 +48,19 @@ class TripMatcherTest {
     }
 
     @Test
+    void tapOffOnALaterDayStillCompletesTheTrip() {
+        Tap nextDayTapOff = new Tap(at(0).plusDays(1), OFF, stop(2), CARD);
+
+        var trips = tripMatcher.matchTrips(List.of(tap(0, ON, 1), nextDayTapOff));
+
+        assertEquals(List.of(new CompletedTrip(stop(1), stop(2))), trips);
+    }
+
+    @Test
     void tapOffWithoutTapOnIsAnUnmatchedTrip() {
         var trips = tripMatcher.matchTrips(List.of(tap(0, OFF, 2)));
 
-        assertEquals(List.of(new UnmatchedTrip(stop(2))), trips);
+        assertEquals(List.of(new UnmatchedTrip(UnmatchedReason.NO_TAP_ON)), trips);
     }
 
     @Test
@@ -76,7 +85,7 @@ class TripMatcherTest {
                 tap(30, ON, 3)));                 // incomplete
 
         assertEquals(List.of(
-                new UnmatchedTrip(stop(1)),
+                new UnmatchedTrip(UnmatchedReason.NO_TAP_ON),
                 new CompletedTrip(stop(1), stop(2)),
                 new IncompleteTrip(stop(3)),
                 new CancelledTrip(stop(2)),

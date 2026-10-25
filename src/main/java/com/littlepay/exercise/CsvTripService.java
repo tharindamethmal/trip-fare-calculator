@@ -12,6 +12,7 @@ import com.littlepay.exercise.trip.IncompleteTrip;
 import com.littlepay.exercise.trip.MatchedTrip;
 import com.littlepay.exercise.trip.Trip;
 import com.littlepay.exercise.trip.TripMatcher;
+import com.littlepay.exercise.trip.UnmatchedReason;
 import com.littlepay.exercise.trip.UnmatchedTrip;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,31 +52,41 @@ public class CsvTripService {
 
         List<TripRow> trips = new ArrayList<>();
         int next = 0; // trips come back in tap order, each using the next one or two taps
-        for (Trip trip : tripMatcher.matchTrips(modelTaps)) {
-            switch (trip) {
-                case CompletedTrip completed -> {
-                    trips.add(toTripRow(completed, "COMPLETED", sorted.get(next), sorted.get(next + 1)));
-                    next += 2;
-                }
-                case CancelledTrip cancelled -> {
-                    trips.add(toTripRow(cancelled, "CANCELLED", sorted.get(next), sorted.get(next + 1)));
-                    next += 2;
-                }
-                case IncompleteTrip incomplete -> {
-                    trips.add(toTripRow(incomplete, "INCOMPLETE", sorted.get(next), null));
-                    next += 1;
-                }
-                case UnmatchedTrip unmatched -> {
-                    log.warn("Tap off at stop {} has no tap on before it; not charged", unmatched.to());
-                    next += 1;
-                }
+        for (Trip matched : tripMatcher.matchTrips(modelTaps)) {
+            int tapsUsed = tapsUsedBy(matched);
+            List<TapRow> rows = sorted.subList(next, next + tapsUsed);
+            next += tapsUsed;
+
+            switch (chargeable(matched)) {
+                case MatchedTrip trip -> trips.add(toTripRow(trip, rows));
+                case UnmatchedTrip unmatched -> log.warn("Unmatched trip ({}): tap at stop {} at {}; not charged",
+                        unmatched.reason().description(), rows.getFirst().stopId(), rows.getFirst().timestamp());
             }
         }
         return trips;
     }
 
-    /** tapOff is null for an incomplete trip **/
-    private TripRow toTripRow(MatchedTrip trip, String status, TapRow tapOn, TapRow tapOff) {
+    /** A matched trip whose stops have no fare cannot be charged, so it is unmatched too **/
+    private Trip chargeable(Trip trip) {
+        if (trip instanceof MatchedTrip matched && !chargeCalculator.canCharge(matched)) {
+            return new UnmatchedTrip(UnmatchedReason.NO_FARE);
+        }
+        return trip;
+    }
+
+    private static int tapsUsedBy(Trip trip) {
+        return switch (trip) {
+            case CompletedTrip completed -> 2;
+            case CancelledTrip cancelled -> 2;
+            case IncompleteTrip incomplete -> 1;
+            case UnmatchedTrip unmatched -> 1;
+        };
+    }
+
+    /** rows: the tap on, then the tap off unless the trip is incomplete **/
+    private TripRow toTripRow(MatchedTrip trip, List<TapRow> rows) {
+        TapRow tapOn = rows.getFirst();
+        TapRow tapOff = rows.size() > 1 ? rows.get(1) : null;
         return new TripRow(
                 tapOn.timestamp(),
                 tapOff == null ? null : tapOff.timestamp(),
@@ -86,6 +97,14 @@ public class CsvTripService {
                 tapOn.companyId(),
                 tapOn.busId(),
                 tapOn.pan(),
-                status);
+                status(trip));
+    }
+
+    private static String status(MatchedTrip trip) {
+        return switch (trip) {
+            case CompletedTrip completed -> "COMPLETED";
+            case IncompleteTrip incomplete -> "INCOMPLETE";
+            case CancelledTrip cancelled -> "CANCELLED";
+        };
     }
 }

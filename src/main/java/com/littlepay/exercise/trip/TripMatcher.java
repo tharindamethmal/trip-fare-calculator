@@ -10,10 +10,7 @@ import java.util.List;
 /** The state machine: turns one card's taps, in any order, into trips **/
 public class TripMatcher {
 
-    /**
-     * Trips come back in tap order, and each uses the next taps in time order:
-     * two for a completed or cancelled trip, one for an incomplete or unmatched trip.
-     **/
+    /** Trips come back in tap order, each using the next 2 taps (completed, cancelled) or 1 (incomplete, unmatched) **/
     public List<Trip> matchTrips(List<Tap> taps) {
         List<Trip> trips = new ArrayList<>();
         Tap pendingTapOn = null; // a tap on still waiting for its tap off
@@ -28,7 +25,7 @@ public class TripMatcher {
             } else {
                 if (pendingTapOn == null) {
                     // a tap off with no tap on before it
-                    trips.add(new UnmatchedTrip(tap.stopId()));
+                    trips.add(new UnmatchedTrip(UnmatchedReason.NO_TAP_ON));
                     continue;
                 }
                 trips.add(tripBetween(pendingTapOn, tap));

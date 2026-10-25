@@ -1,7 +1,5 @@
 package com.littlepay.exercise.trip;
 
-import java.math.BigInteger;
-
-/** A tap off with no tap on before it **/
-public record UnmatchedTrip(BigInteger to) implements Trip {
+/** Taps that cannot be matched into a trip that can be charged **/
+public record UnmatchedTrip(UnmatchedReason reason) implements Trip {
 }

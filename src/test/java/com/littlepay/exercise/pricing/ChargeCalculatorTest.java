@@ -1,5 +1,6 @@
 package com.littlepay.exercise.pricing;
 
+import com.littlepay.exercise.pricing.fare.CsvFareProvider;
 import com.littlepay.exercise.trip.CancelledTrip;
 import com.littlepay.exercise.trip.CompletedTrip;
 import com.littlepay.exercise.trip.IncompleteTrip;
@@ -11,6 +12,8 @@ import java.util.Currency;
 import static com.littlepay.exercise.TestFixtures.fixedFares;
 import static com.littlepay.exercise.TestFixtures.stop;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ChargeCalculatorTest {
 
@@ -26,6 +29,27 @@ class ChargeCalculatorTest {
     @Test
     void incompleteTripIsChargedTheMaxFareFromItsStop() {
         assertEquals(usd("7.30"), chargeCalculator.calculateCharge(new IncompleteTrip(stop(1))));
+    }
+
+    @Test
+    void tripCanOnlyBeChargedWhenAllItsStopsHaveFares() {
+        ChargeCalculator calculator = new ChargeCalculator(new CsvFareProvider(
+                ChargeCalculatorTest.class.getResourceAsStream("/fares-aud.csv"), USD));
+
+        assertTrue(calculator.canCharge(new CompletedTrip(stop(1), stop(2))));
+        assertFalse(calculator.canCharge(new CompletedTrip(stop(1), stop(9))));
+        assertFalse(calculator.canCharge(new IncompleteTrip(stop(9))));
+        assertFalse(calculator.canCharge(new CancelledTrip(stop(9))));
+    }
+
+    @Test
+    void completedTripCannotBeChargedWithoutAFareForItsPairOfStops() {
+        ChargeCalculator calculator = new ChargeCalculator(new CsvFareProvider(
+                ChargeCalculatorTest.class.getResourceAsStream("fares-without-1-3.csv"), USD));
+
+        assertTrue(calculator.canCharge(new CompletedTrip(stop(1), stop(2))));
+        assertFalse(calculator.canCharge(new CompletedTrip(stop(1), stop(3))));   // both stops have fares, not this pair
+        assertTrue(calculator.canCharge(new IncompleteTrip(stop(1))));
     }
 
     @Test

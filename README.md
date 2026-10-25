@@ -44,7 +44,12 @@ mvn test
 - One currency per fares file; no currency conversion
 - Taps are matched in time order, not file order
 - A tap off with no tap on before it is an unmatched trip and is not charged
+- A trip with no fare for its stops is an unmatched trip and is not charged
+- Unmatched trips are logged with their reason and left out of the output
 - No time limit between a tap on and its tap off; a tap off the next day still completes the trip
+- Bus and company are ignored when matching; a trip takes them from its tap on
+- Timestamps in `taps.csv` and `trips.csv` are UTC (`dd-MM-yyyy HH:mm:ss`)
+- Stops are written as `Stop<number>` in `taps.csv` and `trips.csv`
 - All fares are defined in AUD (`src/main/resources/fares-aud.csv`)
 
 ## Glossary

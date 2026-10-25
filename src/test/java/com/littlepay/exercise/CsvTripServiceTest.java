@@ -1,11 +1,17 @@
 package com.littlepay.exercise;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import com.littlepay.exercise.csv.taps.TapRow;
 import com.littlepay.exercise.csv.trips.TripRow;
 import com.littlepay.exercise.pricing.ChargeCalculator;
+import com.littlepay.exercise.pricing.fare.CsvFareProvider;
 import com.littlepay.exercise.tap.TapType;
 import com.littlepay.exercise.trip.TripMatcher;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.util.Currency;
@@ -19,6 +25,7 @@ import static com.littlepay.exercise.TestFixtures.stop;
 import static com.littlepay.exercise.tap.TapType.OFF;
 import static com.littlepay.exercise.tap.TapType.ON;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CsvTripServiceTest {
 
@@ -60,8 +67,84 @@ class CsvTripServiceTest {
     }
 
     @Test
+    void tripsAtAStopWithNoFareAreUnmatchedAndTheRestAreStillCharged() {
+        CsvTripService service = new CsvTripService(new TripMatcher(), new ChargeCalculator(new CsvFareProvider(
+                CsvTripServiceTest.class.getResourceAsStream("/fares-aud.csv"), AUD)));
+        Map<String, List<TapRow>> tapsByPan = new LinkedHashMap<>();
+        tapsByPan.put(ALICE, List.of(
+                tap(0, ON, 1, "Bus37", ALICE), tap(5, OFF, 9, "Bus37", ALICE),     // completed, no fare to stop 9
+                tap(10, ON, 9, "Bus37", ALICE), tap(15, OFF, 9, "Bus37", ALICE),   // cancelled at stop 9
+                tap(20, ON, 9, "Bus37", ALICE)));                                  // incomplete from stop 9
+        tapsByPan.put(BOB, List.of(tap(1, ON, 1, "Bus36", BOB), tap(6, OFF, 2, "Bus36", BOB)));
+
+        List<TripRow> trips = service.chargeTrips(tapsByPan);
+
+        assertEquals(List.of(BOB), trips.stream().map(TripRow::pan).toList());
+        assertEquals(new BigDecimal("3.25"), trips.getFirst().chargeAmount());
+    }
+
+    @Test
+    void tripBetweenAPairOfStopsWithNoFareIsUnmatched() {
+        CsvTripService service = new CsvTripService(new TripMatcher(), new ChargeCalculator(new CsvFareProvider(
+                CsvTripServiceTest.class.getResourceAsStream("fares-without-1-3.csv"), AUD)));
+        Map<String, List<TapRow>> tapsByPan = Map.of(ALICE, List.of(
+                tap(0, ON, 1, "Bus37", ALICE), tap(5, OFF, 3, "Bus37", ALICE),     // no 1-3 fare
+                tap(10, ON, 1, "Bus37", ALICE), tap(15, OFF, 2, "Bus37", ALICE)));
+
+        List<TripRow> trips = service.chargeTrips(tapsByPan);
+
+        assertEquals(List.of(at(10)), trips.stream().map(TripRow::started).toList());
+        assertEquals(new BigDecimal("3.25"), trips.getFirst().chargeAmount());
+    }
+
+    @Test
+    void tapOffOnAnotherBusStillCompletesTheTripWithTheTapOnsBusAndCompany() {
+        TapRow tapOn = new TapRow(at(0), ON, stop(1), "Company1", "Bus37", ALICE);
+        TapRow tapOff = new TapRow(at(5), OFF, stop(2), "Company2", "Bus99", ALICE);
+
+        List<TripRow> trips = service.chargeTrips(Map.of(ALICE, List.of(tapOn, tapOff)));
+
+        assertEquals(1, trips.size());
+        assertEquals("COMPLETED", trips.getFirst().status());
+        assertEquals("Company1", trips.getFirst().companyId());
+        assertEquals("Bus37", trips.getFirst().busId());
+    }
+
+    @Test
+    void unmatchedTripsAreLoggedWithTheirReason() {
+        CsvTripService service = new CsvTripService(new TripMatcher(), new ChargeCalculator(new CsvFareProvider(
+                CsvTripServiceTest.class.getResourceAsStream("/fares-aud.csv"), AUD)));
+        Map<String, List<TapRow>> tapsByPan = Map.of(ALICE, List.of(
+                tap(0, OFF, 2, "Bus37", ALICE),                                    // no tap on
+                tap(5, ON, 9, "Bus37", ALICE)));                                   // no fare from stop 9
+
+        List<String> warnings = warningsLoggedWhile(() -> service.chargeTrips(tapsByPan));
+
+        assertEquals(2, warnings.size());
+        assertTrue(warnings.get(0).contains("tap off with no tap on before it"), warnings.get(0));
+        assertTrue(warnings.get(1).contains("no fare for the trip's stops"), warnings.get(1));
+    }
+
+    @Test
     void tapOffWithoutTapOnIsNotCharged() {
         assertEquals(List.of(), service.chargeTrips(Map.of(ALICE, List.of(tap(0, OFF, 2, "Bus37", ALICE)))));
+    }
+
+    /** Captures what CsvTripService logs at WARN while the action runs **/
+    private static List<String> warningsLoggedWhile(Runnable action) {
+        Logger logger = (Logger) LoggerFactory.getLogger(CsvTripService.class);
+        ListAppender<ILoggingEvent> appender = new ListAppender<>();
+        appender.start();
+        logger.addAppender(appender);
+        try {
+            action.run();
+        } finally {
+            logger.detachAppender(appender);
+        }
+        return appender.list.stream()
+                .filter(event -> event.getLevel() == Level.WARN)
+                .map(ILoggingEvent::getFormattedMessage)
+                .toList();
     }
 
     private static TapRow tap(int minute, TapType tapType, int stopId, String busId, String pan) {

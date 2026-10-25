@@ -17,6 +17,15 @@ public class ChargeCalculator {
         this.fareProvider = fareProvider;
     }
 
+    /** Whether the fares this trip needs exist, so it can be charged **/
+    public boolean canCharge(MatchedTrip trip) {
+        return switch (trip) {
+            case CompletedTrip completed -> fareProvider.hasFareBetween(completed.from(), completed.to());
+            case IncompleteTrip incomplete -> fareProvider.servesStop(incomplete.from());
+            case CancelledTrip cancelled -> fareProvider.servesStop(cancelled.from());
+        };
+    }
+
     public Money calculateCharge(MatchedTrip trip) {
         return switch (trip) {
             case CompletedTrip completed -> fareProvider.fareBetween(completed.from(), completed.to());

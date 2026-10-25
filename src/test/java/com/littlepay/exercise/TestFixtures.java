@@ -33,6 +33,16 @@ public final class TestFixtures {
             }
 
             @Override
+            public boolean servesStop(BigInteger stopId) {
+                return true;
+            }
+
+            @Override
+            public boolean hasFareBetween(BigInteger from, BigInteger to) {
+                return true;
+            }
+
+            @Override
             public Money fareBetween(BigInteger from, BigInteger to) {
                 return new Money(new BigDecimal(fare), currency);
             }

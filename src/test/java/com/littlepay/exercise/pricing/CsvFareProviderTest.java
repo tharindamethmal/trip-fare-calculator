@@ -1,6 +1,7 @@
 package com.littlepay.exercise.pricing;
 
 import com.littlepay.exercise.pricing.fare.CsvFareProvider;
+import com.littlepay.exercise.pricing.fare.NoFareException;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -12,7 +13,9 @@ import java.util.Currency;
 
 import static com.littlepay.exercise.TestFixtures.stop;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CsvFareProviderTest {
 
@@ -50,8 +53,26 @@ class CsvFareProviderTest {
     void unknownStopsAreRejected() {
         CsvFareProvider provider = provider("fares.csv");
 
-        assertThrows(IllegalArgumentException.class, () -> provider.fareBetween(stop(1), stop(9)));
-        assertThrows(IllegalArgumentException.class, () -> provider.maxFareFrom(stop(9)));
+        assertThrows(NoFareException.class, () -> provider.fareBetween(stop(1), stop(9)));
+        assertThrows(NoFareException.class, () -> provider.maxFareFrom(stop(9)));
+    }
+
+    @Test
+    void hasFareBetweenOnlyThePairsInTheFile() {
+        CsvFareProvider provider = provider("fares-without-1-3.csv");
+
+        assertTrue(provider.hasFareBetween(stop(1), stop(2)));
+        assertTrue(provider.hasFareBetween(stop(2), stop(1)));
+        assertFalse(provider.hasFareBetween(stop(1), stop(3)));
+    }
+
+    @Test
+    void servesOnlyStopsThatAppearInTheFares() {
+        CsvFareProvider provider = provider("fares.csv");
+
+        assertTrue(provider.servesStop(stop(1)));
+        assertTrue(provider.servesStop(stop(3)));
+        assertFalse(provider.servesStop(stop(9)));
     }
 
     @Test

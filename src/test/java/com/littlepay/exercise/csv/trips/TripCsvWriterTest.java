@@ -7,11 +7,14 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import static com.littlepay.exercise.TestFixtures.at;
 import static com.littlepay.exercise.TestFixtures.stop;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TripCsvWriterTest {
 
@@ -28,6 +31,18 @@ class TripCsvWriterTest {
 
         // compared line by line, so the file's line endings don't matter
         assertEquals(resource("expected-trips.csv").lines().toList(), out.toString().lines().toList());
+    }
+
+    @Test
+    void timestampsAreWrittenInUtc() throws IOException {
+        ZonedDateTime sydney = at(0).withZoneSameInstant(ZoneId.of("Australia/Sydney"));   // 23-01-2023 00:00 local
+        TripRow trip = new TripRow(sydney, null, null, stop(1), null, new BigDecimal("7.30"),
+                "Company1", "Bus37", "5500005555555559", "INCOMPLETE");
+
+        StringWriter out = new StringWriter();
+        new TripCsvWriter().write(List.of(trip), out);
+
+        assertTrue(out.toString().lines().toList().get(1).startsWith("22-01-2023 13:00:00,"), out.toString());
     }
 
     /** Reads a file kept next to this test in src/test/resources **/
