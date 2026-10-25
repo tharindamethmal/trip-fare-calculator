@@ -19,7 +19,22 @@ mvn clean package
 ## Run
 
 ```sh
-java -jar target/trip-fare-calculator-1.0-SNAPSHOT.jar
+java -jar target/trip-fare-calculator-1.0-SNAPSHOT.jar taps.csv
+```
+
+## Output file (Optional)
+
+Writes a new `trips-<UTC timestamp>.csv` in the current folder on each run.
+To choose the file instead (overwritten if it exists), pass it as a second argument:
+
+```sh
+java -jar target/trip-fare-calculator-1.0-SNAPSHOT.jar taps.csv trips.csv
+```
+
+## Test
+
+```sh
+mvn test
 ```
 
 ## Assumptions

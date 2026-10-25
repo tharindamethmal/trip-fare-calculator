@@ -2,15 +2,12 @@ package com.littlepay.exercise.pricing;
 
 import com.littlepay.exercise.pricing.fare.CsvFareProvider;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.Currency;
 
@@ -21,29 +18,19 @@ class CsvFareProviderTest {
 
     private static final Currency USD = Currency.getInstance("USD");
 
-    private static final String FARES = """
-            From,To,Amount
-            1,2,3.25
-            2,3,5.50
-            1,3,7.30
-            """;
-
-    @TempDir
-    Path tempDir;
-
     @Test
-    void fareBetweenStopsIsReadFromTheFile() throws IOException {
-        assertEquals(usd("5.50"), provider(FARES).fareBetween(stop(2), stop(3)));
+    void fareBetweenStopsIsReadFromTheFile() {
+        assertEquals(usd("5.50"), provider("fares.csv").fareBetween(stop(2), stop(3)));
     }
 
     @Test
-    void fareAppliesInBothDirections() throws IOException {
-        assertEquals(usd("3.25"), provider(FARES).fareBetween(stop(2), stop(1)));
+    void fareAppliesInBothDirections() {
+        assertEquals(usd("3.25"), provider("fares.csv").fareBetween(stop(2), stop(1)));
     }
 
     @Test
-    void maxFareFromIsTheHighestFareInvolvingTheStop() throws IOException {
-        CsvFareProvider provider = provider(FARES);
+    void maxFareFromIsTheHighestFareInvolvingTheStop() {
+        CsvFareProvider provider = provider("fares.csv");
 
         assertEquals(usd("7.30"), provider.maxFareFrom(stop(1)));
         assertEquals(usd("5.50"), provider.maxFareFrom(stop(2)));
@@ -51,27 +38,27 @@ class CsvFareProviderTest {
     }
 
     @Test
-    void currencyIsTheOneGivenToTheConstructor() throws IOException {
+    void currencyIsTheOneGivenToTheConstructor() {
         Currency aud = Currency.getInstance("AUD");
-        CsvFareProvider provider = new CsvFareProvider(faresFile(FARES), aud);
+        CsvFareProvider provider = new CsvFareProvider(faresFile("fares.csv"), aud);
 
         assertEquals(aud, provider.currency());
         assertEquals(new Money(new BigDecimal("3.25"), aud), provider.fareBetween(stop(1), stop(2)));
     }
 
     @Test
-    void unknownStopsAreRejected() throws IOException {
-        CsvFareProvider provider = provider(FARES);
+    void unknownStopsAreRejected() {
+        CsvFareProvider provider = provider("fares.csv");
 
         assertThrows(IllegalArgumentException.class, () -> provider.fareBetween(stop(1), stop(9)));
         assertThrows(IllegalArgumentException.class, () -> provider.maxFareFrom(stop(9)));
     }
 
     @Test
-    void faresCanBeReadFromAStream() {
-        var stream = new ByteArrayInputStream(FARES.getBytes(StandardCharsets.UTF_8));
-
-        assertEquals(usd("7.30"), new CsvFareProvider(stream, USD).fareBetween(stop(1), stop(3)));
+    void faresCanBeReadFromAStream() throws IOException {
+        try (InputStream stream = getClass().getResourceAsStream("fares.csv")) {
+            assertEquals(usd("7.30"), new CsvFareProvider(stream, USD).fareBetween(stop(1), stop(3)));
+        }
     }
 
     @Test
@@ -88,15 +75,20 @@ class CsvFareProviderTest {
 
     @Test
     void duplicateFaresAreRejected() {
-        assertThrows(IllegalArgumentException.class, () -> provider(FARES + "2,1,4.00\n"));
+        assertThrows(IllegalArgumentException.class, () -> provider("fares-with-duplicate.csv"));
     }
 
-    private CsvFareProvider provider(String csv) throws IOException {
-        return new CsvFareProvider(faresFile(csv), USD);
+    private CsvFareProvider provider(String resource) {
+        return new CsvFareProvider(faresFile(resource), USD);
     }
 
-    private Path faresFile(String csv) throws IOException {
-        return Files.writeString(tempDir.resolve("fares.csv"), csv);
+    /** A fares file kept next to this test in src/test/resources **/
+    private Path faresFile(String resource) {
+        try {
+            return Path.of(getClass().getResource(resource).toURI());
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     private static Money usd(String amount) {

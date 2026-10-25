@@ -10,7 +10,11 @@ import java.util.List;
 /** The state machine: turns one ordered sequence of taps into trips **/
 public class TripMatcher {
 
-    public List<Trip> matchTrips(List<Tap> taps){
+    /**
+     * Trips come back in tap order, and each uses the next taps in time order:
+     * two for a completed or cancelled trip, one for an incomplete or unmatched trip.
+     **/
+    public List<Trip> matchTrips(List<Tap> taps) {
         List<Trip> trips = new ArrayList<>();
         Tap pendingTapOn = null; // a tap on still waiting for its tap off
 

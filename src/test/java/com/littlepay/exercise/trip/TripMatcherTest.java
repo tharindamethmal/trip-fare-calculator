@@ -67,6 +67,23 @@ class TripMatcherTest {
         assertEquals(List.of(), tripMatcher.matchTrips(List.of()));
     }
 
+    @Test
+    void tripsComeBackInTapOrder() {
+        var trips = tripMatcher.matchTrips(List.of(
+                tap(0, OFF, 1),                   // unmatched
+                tap(5, ON, 1), tap(10, OFF, 2),   // completed
+                tap(15, ON, 3),                   // incomplete
+                tap(20, ON, 2), tap(25, OFF, 2),  // cancelled
+                tap(30, ON, 3)));                 // incomplete
+
+        assertEquals(List.of(
+                new UnmatchedTrip(stop(1)),
+                new CompletedTrip(stop(1), stop(2)),
+                new IncompleteTrip(stop(3)),
+                new CancelledTrip(stop(2)),
+                new IncompleteTrip(stop(3))), trips);
+    }
+
     private static Tap tap(int minute, TapType tapType, int stopId) {
         ZonedDateTime timestamp = ZonedDateTime.of(2023, 1, 22, 13, minute, 0, 0, ZoneOffset.UTC);
         return new Tap(timestamp, tapType, stop(stopId), CARD);
