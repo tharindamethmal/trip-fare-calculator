@@ -39,3 +39,6 @@ build/
 .claude/
 .omc/
 CLAUDE.md
+
+### App output ###
+trips-*.csv
