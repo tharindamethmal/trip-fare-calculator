@@ -60,7 +60,7 @@ public class CsvApp {
         return file;
     }
 
-    private static void run(Path tapsFile, Path tripsFile) throws IOException {
+    static void run(Path tapsFile, Path tripsFile) throws IOException {
         log.info("Starting CSV processing");
 
         List<TapRow> taps;

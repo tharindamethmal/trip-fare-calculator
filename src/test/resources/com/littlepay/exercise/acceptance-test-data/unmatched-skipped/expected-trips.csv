@@ -1,0 +1,2 @@
+Started,Finished,DurationSecs,FromStopId,ToStopId,ChargeAmount,CompanyId,BusID,PAN,Status
+22-01-2023 09:00:00,22-01-2023 09:30:00,1800,Stop1,Stop3,$7.30,Company1,Bus37,36700102000000,COMPLETED
