@@ -19,7 +19,7 @@ mvn clean package
 ## Run
 
 ```sh
-java -jar target/trip-fare-calculator-1.0-SNAPSHOT.jar taps.csv
+java -jar target/trip-fare-calculator-1.0-SNAPSHOT.jar sample-taps.csv
 ```
 
 ## Output file (Optional)
@@ -28,7 +28,7 @@ Writes a new `trips-<UTC timestamp>.csv` in the current folder on each run.
 To choose the file instead (overwritten if it exists), pass it as a second argument:
 
 ```sh
-java -jar target/trip-fare-calculator-1.0-SNAPSHOT.jar taps.csv trips.csv
+java -jar target/trip-fare-calculator-1.0-SNAPSHOT.jar sample-taps.csv trips.csv
 ```
 
 ## Test
@@ -39,6 +39,7 @@ mvn test
 
 ## Assumptions
 
+- The taps file is well formed and has no missing data
 - Fares apply in both directions
 - One fare per stop pair; duplicates are rejected
 - Fares have at most 2 decimal places (cents); a fares file with more, e.g. `3.255`, is rejected rather than rounded
