@@ -20,8 +20,10 @@ import org.slf4j.LoggerFactory;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /** Matches and charges the trips of each card **/
 public class CsvTripService {
@@ -39,11 +41,18 @@ public class CsvTripService {
     /** tapsByPan: each card's taps, keyed by its PAN **/
     public List<TripRow> chargeTrips(Map<String, List<TapRow>> tapsByPan) {
         List<TripRow> trips = new ArrayList<>();
-        tapsByPan.forEach((pan, taps) -> trips.addAll(chargeTripsOfOneCard(pan, taps)));
+        Map<UnmatchedReason, Integer> unmatchedCounts = new EnumMap<>(UnmatchedReason.class);
+        tapsByPan.forEach((pan, taps) -> trips.addAll(chargeTripsOfOneCard(pan, taps, unmatchedCounts)));
+
+        if (!unmatchedCounts.isEmpty()) {
+            int total = unmatchedCounts.values().stream().mapToInt(Integer::intValue).sum();
+            log.info("{} unmatched trips not charged: {}", total, unmatchedCounts);
+        }
         return trips;
     }
 
-    private List<TripRow> chargeTripsOfOneCard(String pan, List<TapRow> taps) {
+    private List<TripRow> chargeTripsOfOneCard(String pan, List<TapRow> taps,
+                                               Map<UnmatchedReason, Integer> unmatchedCounts) {
         List<TapRow> sorted = taps.stream().sorted(Comparator.comparing(TapRow::timestamp)).toList();
         Card card = new CreditCard(pan);
         List<Tap> modelTaps = sorted.stream()
@@ -59,11 +68,26 @@ public class CsvTripService {
 
             switch (chargeable(matched)) {
                 case MatchedTrip trip -> trips.add(toTripRow(trip, rows));
-                case UnmatchedTrip unmatched -> log.warn("Unmatched trip ({}): tap at stop {} at {}; not charged",
-                        unmatched.reason().description(), rows.getFirst().stopId(), rows.getFirst().timestamp());
+                case UnmatchedTrip unmatched -> {
+                    log.warn("Unmatched trip, not charged: {} | card {} | {}",
+                            unmatched.reason().description(), masked(pan), describe(rows));
+                    unmatchedCounts.merge(unmatched.reason(), 1, Integer::sum);
+                }
             }
         }
         return trips;
+    }
+
+    /** Only the last four digits, so card numbers never end up in logs **/
+    private static String masked(String pan) {
+        return pan.length() <= 4 ? "****" : "****" + pan.substring(pan.length() - 4);
+    }
+
+    /** e.g. "ON Stop1 at 2023-01-22T13:00Z, OFF Stop9 at 2023-01-22T13:05Z" **/
+    private static String describe(List<TapRow> rows) {
+        return rows.stream()
+                .map(row -> row.tapType() + " Stop" + row.stopId() + " at " + row.timestamp())
+                .collect(Collectors.joining(", "));
     }
 
     /** A matched trip whose stops have no fare cannot be charged, so it is unmatched too **/

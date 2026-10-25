@@ -114,15 +114,20 @@ class CsvTripServiceTest {
     void unmatchedTripsAreLoggedWithTheirReason() {
         CsvTripService service = new CsvTripService(new TripMatcher(), new ChargeCalculator(new CsvFareProvider(
                 CsvTripServiceTest.class.getResourceAsStream("/fares-aud.csv"), AUD)));
-        Map<String, List<TapRow>> tapsByPan = Map.of(ALICE, List.of(
-                tap(0, OFF, 2, "Bus37", ALICE),                                    // no tap on
-                tap(5, ON, 9, "Bus37", ALICE)));                                   // no fare from stop 9
+        String pan = "5500005555555559";
+        Map<String, List<TapRow>> tapsByPan = Map.of(pan, List.of(
+                tap(0, OFF, 2, "Bus37", pan),                                      // no tap on
+                tap(5, ON, 1, "Bus37", pan), tap(10, OFF, 9, "Bus37", pan)));      // no fare to stop 9
 
-        List<String> warnings = warningsLoggedWhile(() -> service.chargeTrips(tapsByPan));
+        List<ILoggingEvent> logs = logsWhile(() -> service.chargeTrips(tapsByPan));
+        List<String> warnings = messages(logs, Level.WARN);
 
         assertEquals(2, warnings.size());
         assertTrue(warnings.get(0).contains("tap off with no tap on before it"), warnings.get(0));
         assertTrue(warnings.get(1).contains("no fare for the trip's stops"), warnings.get(1));
+        assertTrue(warnings.get(1).contains("ON Stop1") && warnings.get(1).contains("OFF Stop9"), warnings.get(1));
+        assertTrue(warnings.stream().allMatch(w -> w.contains("card ****5559") && !w.contains(pan)), warnings.toString());
+        assertEquals(List.of("2 unmatched trips not charged: {NO_TAP_ON=1, NO_FARE=1}"), messages(logs, Level.INFO));
     }
 
     @Test
@@ -130,8 +135,8 @@ class CsvTripServiceTest {
         assertEquals(List.of(), service.chargeTrips(Map.of(ALICE, List.of(tap(0, OFF, 2, "Bus37", ALICE)))));
     }
 
-    /** Captures what CsvTripService logs at WARN while the action runs **/
-    private static List<String> warningsLoggedWhile(Runnable action) {
+    /** Captures what CsvTripService logs while the action runs **/
+    private static List<ILoggingEvent> logsWhile(Runnable action) {
         Logger logger = (Logger) LoggerFactory.getLogger(CsvTripService.class);
         ListAppender<ILoggingEvent> appender = new ListAppender<>();
         appender.start();
@@ -141,8 +146,12 @@ class CsvTripServiceTest {
         } finally {
             logger.detachAppender(appender);
         }
-        return appender.list.stream()
-                .filter(event -> event.getLevel() == Level.WARN)
+        return appender.list;
+    }
+
+    private static List<String> messages(List<ILoggingEvent> logs, Level level) {
+        return logs.stream()
+                .filter(event -> event.getLevel() == level)
                 .map(ILoggingEvent::getFormattedMessage)
                 .toList();
     }
