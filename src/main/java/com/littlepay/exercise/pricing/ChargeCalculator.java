@@ -5,14 +5,22 @@ import com.littlepay.exercise.trip.CompletedTrip;
 import com.littlepay.exercise.trip.IncompleteTrip;
 import com.littlepay.exercise.trip.MatchedTrip;
 
+import java.math.BigDecimal;
+
 /** Prices a single trip **/
 public class ChargeCalculator {
 
+    private final FareProvider fareProvider;
+
+    public ChargeCalculator(FareProvider fareProvider) {
+        this.fareProvider = fareProvider;
+    }
+
     public Money calculateCharge(MatchedTrip trip) {
-        switch (trip) {
-            case CompletedTrip completed -> throw new UnsupportedOperationException("Not yet implemented");
-            case IncompleteTrip incomplete -> throw new UnsupportedOperationException("Not yet implemented");
-            case CancelledTrip cancelled -> throw new UnsupportedOperationException("Not yet implemented");
-        }
+        return switch (trip) {
+            case CompletedTrip completed -> fareProvider.fareBetween(completed.from(), completed.to());
+            case IncompleteTrip incomplete -> fareProvider.maxFareFrom(incomplete.from());
+            case CancelledTrip cancelled -> new Money(BigDecimal.ZERO, fareProvider.currency());
+        };
     }
 }
