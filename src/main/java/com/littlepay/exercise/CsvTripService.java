@@ -53,7 +53,10 @@ public class CsvTripService {
 
     private List<TripRow> chargeTripsOfOneCard(String pan, List<TapRow> taps,
                                                Map<UnmatchedReason, Integer> unmatchedCounts) {
-        List<TapRow> sorted = taps.stream().sorted(Comparator.comparing(TapRow::timestamp)).toList();
+        // same order as TripMatcher: by time, a tap on before a tap off at the same time
+        List<TapRow> sorted = taps.stream()
+                .sorted(Comparator.comparing(TapRow::timestamp).thenComparing(TapRow::tapType))
+                .toList();
         Card card = new CreditCard(pan);
         List<Tap> modelTaps = sorted.stream()
                 .map(row -> new Tap(row.timestamp(), row.tapType(), row.stopId(), card))

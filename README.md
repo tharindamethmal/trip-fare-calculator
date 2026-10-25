@@ -43,6 +43,7 @@ mvn test
 - One fare per stop pair; duplicates are rejected
 - One currency per fares file; no currency conversion
 - Taps are matched in time order, not file order
+- A tap on and tap off at the same time: the tap on is treated as first
 - A tap off with no tap on before it is an unmatched trip and is not charged
 - A trip with no fare for its stops is an unmatched trip and is not charged
 - Unmatched trips are logged with their reason and left out of the output

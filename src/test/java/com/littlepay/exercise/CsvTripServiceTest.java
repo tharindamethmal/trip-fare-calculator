@@ -131,6 +131,19 @@ class CsvTripServiceTest {
     }
 
     @Test
+    void tapOffListedBeforeATapOnAtTheSameTimeStillCompletesTheTrip() {
+        TapRow tapOff = new TapRow(at(0), OFF, stop(2), "Company1", "Bus99", ALICE);
+        TapRow tapOn = new TapRow(at(0), ON, stop(1), "Company1", "Bus37", ALICE);
+
+        List<TripRow> trips = service.chargeTrips(Map.of(ALICE, List.of(tapOff, tapOn)));
+
+        assertEquals(1, trips.size());
+        assertEquals("COMPLETED", trips.getFirst().status());
+        assertEquals(stop(1), trips.getFirst().fromStopId());
+        assertEquals("Bus37", trips.getFirst().busId());    // taken from the tap on, so the rows lined up
+    }
+
+    @Test
     void tapOffWithoutTapOnIsNotCharged() {
         assertEquals(List.of(), service.chargeTrips(Map.of(ALICE, List.of(tap(0, OFF, 2, "Bus37", ALICE)))));
     }

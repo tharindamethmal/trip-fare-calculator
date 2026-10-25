@@ -48,6 +48,14 @@ class TripMatcherTest {
     }
 
     @Test
+    void tapOnComesBeforeTapOffAtTheSameTimeWhateverTheInputOrder() {
+        assertEquals(List.of(new CompletedTrip(stop(1), stop(2))),
+                tripMatcher.matchTrips(List.of(tap(0, OFF, 2), tap(0, ON, 1))));
+        assertEquals(List.of(new CancelledTrip(stop(1))),
+                tripMatcher.matchTrips(List.of(tap(0, OFF, 1), tap(0, ON, 1))));
+    }
+
+    @Test
     void tapOffOnALaterDayStillCompletesTheTrip() {
         Tap nextDayTapOff = new Tap(at(0).plusDays(1), OFF, stop(2), CARD);
 

@@ -49,7 +49,7 @@ public class TripMatcher {
 
     private static List<Tap> sortedByTime(List<Tap> taps) {
         return taps.stream()
-                .sorted(Comparator.comparing(Tap::timestamp))
+                .sorted(Comparator.comparing(Tap::timestamp).thenComparing(Tap::tapType))
                 .toList();
     }
 }
