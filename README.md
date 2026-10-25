@@ -41,6 +41,7 @@ mvn test
 
 - Fares apply in both directions
 - One fare per stop pair; duplicates are rejected
+- Fares have at most 2 decimal places (cents); a fares file with more, e.g. `3.255`, is rejected rather than rounded
 - One currency per fares file; no currency conversion
 - Taps are matched in time order, not file order
 - A tap on and tap off at the same time: the tap on is treated as first

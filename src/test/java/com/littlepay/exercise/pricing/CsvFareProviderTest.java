@@ -95,6 +95,12 @@ class CsvFareProviderTest {
     }
 
     @Test
+    void faresMorePreciseThanTheCurrencyAreRejectedWithTheirRecordNumber() {
+        var e = assertThrows(IllegalArgumentException.class, () -> provider("fares-too-precise.csv"));
+        assertEquals("Invalid fare on record 2: 5.555 has more than 2 decimal places for USD", e.getMessage());
+    }
+
+    @Test
     void duplicateFaresAreRejected() {
         assertThrows(IllegalArgumentException.class, () -> provider("fares-with-duplicate.csv"));
     }

@@ -97,8 +97,15 @@ public class CsvFareProvider implements FareProvider {
                 if (!record.isConsistent()) {
                     throw new IllegalArgumentException("Expected From,To,Amount on record " + record.getRecordNumber());
                 }
-                StopPair stops = StopPair.of(new BigInteger(record.get("From")), new BigInteger(record.get("To")));
-                Money fare = new Money(new BigDecimal(record.get("Amount")), currency);
+                StopPair stops;
+                Money fare;
+                try {
+                    stops = StopPair.of(new BigInteger(record.get("From")), new BigInteger(record.get("To")));
+                    fare = new Money(new BigDecimal(record.get("Amount")), currency);
+                } catch (IllegalArgumentException e) {
+                    throw new IllegalArgumentException(
+                            "Invalid fare on record " + record.getRecordNumber() + ": " + e.getMessage(), e);
+                }
                 if (fares.putIfAbsent(stops, fare) != null) {
                     throw new IllegalArgumentException("Duplicate fare for stops " + stops.low() + " and " + stops.high()
                             + " on record " + record.getRecordNumber());
