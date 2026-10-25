@@ -64,7 +64,7 @@ mvn test
 | Completed trip  | Tap on and tap off at different stops                    |
 | Incomplete trip | Tap on with no tap off                                   |
 | Cancelled trip  | Tap on and tap off at the same stop                      |
-| Unmatched trip  | Tap off with no tap on before it                         |
+| Unmatched trip  | Taps that can't be charged: a tap off with no tap on before it, or no fare for the stops |
 | Fare            | Published price between two stops, in either direction   |
 | Max fare        | Highest fare from a stop; charged for an incomplete trip |
 | Charge          | Amount one trip costs after the rules are applied        |
