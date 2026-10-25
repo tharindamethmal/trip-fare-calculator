@@ -61,7 +61,7 @@ public class CsvApp {
     }
 
     private static void run(Path tapsFile, Path tripsFile) throws IOException {
-        log.debug("Starting CSV processing");
+        log.info("Starting CSV processing");
 
         List<TapRow> taps;
         try (Reader reader = Files.newBufferedReader(tapsFile)) {

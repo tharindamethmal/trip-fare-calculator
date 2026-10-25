@@ -6,11 +6,11 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.Currency;
 
+import static com.littlepay.exercise.TestFixtures.stop;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -93,9 +93,5 @@ class CsvFareProviderTest {
 
     private static Money usd(String amount) {
         return new Money(new BigDecimal(amount), USD);
-    }
-
-    private static BigInteger stop(int stopId) {
-        return BigInteger.valueOf(stopId);
     }
 }

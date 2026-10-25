@@ -5,11 +5,10 @@ import com.littlepay.exercise.tap.Tap;
 import com.littlepay.exercise.tap.TapType;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigInteger;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.List;
 
+import static com.littlepay.exercise.TestFixtures.at;
+import static com.littlepay.exercise.TestFixtures.stop;
 import static com.littlepay.exercise.tap.TapType.OFF;
 import static com.littlepay.exercise.tap.TapType.ON;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -85,11 +84,6 @@ class TripMatcherTest {
     }
 
     private static Tap tap(int minute, TapType tapType, int stopId) {
-        ZonedDateTime timestamp = ZonedDateTime.of(2023, 1, 22, 13, minute, 0, 0, ZoneOffset.UTC);
-        return new Tap(timestamp, tapType, stop(stopId), CARD);
-    }
-
-    private static BigInteger stop(int stopId) {
-        return BigInteger.valueOf(stopId);
+        return new Tap(at(minute), tapType, stop(stopId), CARD);
     }
 }

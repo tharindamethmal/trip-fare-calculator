@@ -3,21 +3,19 @@ package com.littlepay.exercise;
 import com.littlepay.exercise.csv.taps.TapRow;
 import com.littlepay.exercise.csv.trips.TripRow;
 import com.littlepay.exercise.pricing.ChargeCalculator;
-import com.littlepay.exercise.pricing.Money;
-import com.littlepay.exercise.pricing.fare.FareProvider;
 import com.littlepay.exercise.tap.TapType;
 import com.littlepay.exercise.trip.TripMatcher;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.Currency;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.littlepay.exercise.TestFixtures.at;
+import static com.littlepay.exercise.TestFixtures.fixedFares;
+import static com.littlepay.exercise.TestFixtures.stop;
 import static com.littlepay.exercise.tap.TapType.OFF;
 import static com.littlepay.exercise.tap.TapType.ON;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -28,25 +26,8 @@ class CsvTripServiceTest {
     private static final String ALICE = "1111";
     private static final String BOB = "2222";
 
-    private final FareProvider fareProvider = new FareProvider() {
-        @Override
-        public Currency currency() {
-            return AUD;
-        }
-
-        @Override
-        public Money fareBetween(BigInteger from, BigInteger to) {
-            return new Money(new BigDecimal("3.25"), AUD);
-        }
-
-        @Override
-        public Money maxFareFrom(BigInteger from) {
-            return new Money(new BigDecimal("7.30"), AUD);
-        }
-    };
-
     private final CsvTripService service =
-            new CsvTripService(new TripMatcher(), new ChargeCalculator(fareProvider));
+            new CsvTripService(new TripMatcher(), new ChargeCalculator(fixedFares(AUD, "3.25", "7.30")));
 
     @Test
     void eachCardsTapsBecomeChargedTripRows() {
@@ -85,13 +66,5 @@ class CsvTripServiceTest {
 
     private static TapRow tap(int minute, TapType tapType, int stopId, String busId, String pan) {
         return new TapRow(at(minute), tapType, stop(stopId), "Company1", busId, pan);
-    }
-
-    private static ZonedDateTime at(int minute) {
-        return ZonedDateTime.of(2023, 1, 22, 13, minute, 0, 0, ZoneOffset.UTC);
-    }
-
-    private static BigInteger stop(int stopId) {
-        return BigInteger.valueOf(stopId);
     }
 }

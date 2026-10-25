@@ -8,10 +8,6 @@ public final class CreditCard extends Card {
         this.primaryAccountNumber = primaryAccountNumber;
     }
 
-    public String getPrimaryAccountNumber() {
-        return primaryAccountNumber;
-    }
-
     @Override
     public String getUniqueIdentifier() {
         return primaryAccountNumber;

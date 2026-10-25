@@ -6,12 +6,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.List;
 
+import static com.littlepay.exercise.TestFixtures.at;
+import static com.littlepay.exercise.TestFixtures.stop;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class TripCsvWriterTest {
@@ -36,13 +35,5 @@ class TripCsvWriterTest {
         try (InputStream in = getClass().getResourceAsStream(name)) {
             return new String(in.readAllBytes(), StandardCharsets.UTF_8);
         }
-    }
-
-    private static ZonedDateTime at(int minute) {
-        return ZonedDateTime.of(2023, 1, 22, 13, minute, 0, 0, ZoneOffset.UTC);
-    }
-
-    private static BigInteger stop(int stopId) {
-        return BigInteger.valueOf(stopId);
     }
 }

@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-/** The state machine: turns one ordered sequence of taps into trips **/
+/** The state machine: turns one card's taps, in any order, into trips **/
 public class TripMatcher {
 
     /**
