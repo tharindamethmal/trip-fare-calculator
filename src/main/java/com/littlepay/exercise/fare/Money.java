@@ -1,4 +1,4 @@
-package com.littlepay.excercise.model;
+package com.littlepay.exercise.fare;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

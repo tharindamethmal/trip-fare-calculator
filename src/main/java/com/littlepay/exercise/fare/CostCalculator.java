@@ -1,10 +1,9 @@
-package com.littlepay.excercise.costcalculation;
+package com.littlepay.exercise.fare;
 
-import com.littlepay.excercise.model.Money;
-import com.littlepay.excercise.model.trips.CancelledTrip;
-import com.littlepay.excercise.model.trips.CompletedTrip;
-import com.littlepay.excercise.model.trips.IncompleteTrip;
-import com.littlepay.excercise.model.trips.MatchedTrip;
+import com.littlepay.exercise.trip.CancelledTrip;
+import com.littlepay.exercise.trip.CompletedTrip;
+import com.littlepay.exercise.trip.IncompleteTrip;
+import com.littlepay.exercise.trip.MatchedTrip;
 
 /** Prices a single trip **/
 public class CostCalculator {

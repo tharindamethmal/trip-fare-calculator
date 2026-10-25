@@ -1,4 +1,4 @@
-package com.littlepay.excercise.model.trips;
+package com.littlepay.exercise.trip;
 
 public sealed interface Trip permits MatchedTrip, UnmatchedTrip {
 }

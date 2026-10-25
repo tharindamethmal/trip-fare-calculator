@@ -1,6 +1,6 @@
-package com.littlepay.excercise.model;
+package com.littlepay.exercise.tap;
 
-import com.littlepay.excercise.model.cards.Card;
+import com.littlepay.exercise.card.Card;
 
 import java.math.BigInteger;
 import java.time.ZonedDateTime;

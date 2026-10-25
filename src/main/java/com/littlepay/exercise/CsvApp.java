@@ -1,4 +1,4 @@
-package com.littlepay.excercise;
+package com.littlepay.exercise;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,4 +1,4 @@
-package com.littlepay.excercise.model.cards;
+package com.littlepay.exercise.card;
 
 public final class CreditCard extends Card {
 

@@ -1,13 +1,7 @@
-package com.littlepay.excercise.tripmatching;
+package com.littlepay.exercise.trip;
 
-import com.littlepay.excercise.model.Tap;
-import com.littlepay.excercise.model.TapType;
-import com.littlepay.excercise.model.trips.CancelledTrip;
-import com.littlepay.excercise.model.trips.CompletedTrip;
-import com.littlepay.excercise.model.trips.IncompleteTrip;
-import com.littlepay.excercise.model.trips.MatchedTrip;
-import com.littlepay.excercise.model.trips.Trip;
-import com.littlepay.excercise.model.trips.UnmatchedTrip;
+import com.littlepay.exercise.tap.Tap;
+import com.littlepay.exercise.tap.TapType;
 
 import java.util.ArrayList;
 import java.util.Comparator;
