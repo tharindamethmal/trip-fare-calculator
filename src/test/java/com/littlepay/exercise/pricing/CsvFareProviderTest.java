@@ -1,5 +1,6 @@
 package com.littlepay.exercise.pricing;
 
+import com.littlepay.exercise.pricing.fare.CsvFareProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 

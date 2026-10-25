@@ -24,6 +24,12 @@ java -jar target/trip-fare-calculator-1.0-SNAPSHOT.jar
 
 ## Assumptions
 
+- Fares apply in both directions
+- One fare per stop pair; duplicates are rejected
+- One currency per fares file; no currency conversion
+- Taps are matched in time order, not file order
+- A tap off with no tap on before it is an unmatched trip and is not charged
+- No time limit between a tap on and its tap off; a tap off the next day still completes the trip
 - All fares are defined in AUD (`src/main/resources/fares-aud.csv`)
 
 ## Glossary

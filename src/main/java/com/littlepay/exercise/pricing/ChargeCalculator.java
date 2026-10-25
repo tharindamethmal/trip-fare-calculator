@@ -1,5 +1,6 @@
 package com.littlepay.exercise.pricing;
 
+import com.littlepay.exercise.pricing.fare.FareProvider;
 import com.littlepay.exercise.trip.CancelledTrip;
 import com.littlepay.exercise.trip.CompletedTrip;
 import com.littlepay.exercise.trip.IncompleteTrip;

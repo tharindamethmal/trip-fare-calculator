@@ -1,4 +1,6 @@
-package com.littlepay.exercise.pricing;
+package com.littlepay.exercise.pricing.fare;
+
+import com.littlepay.exercise.pricing.Money;
 
 import java.math.BigInteger;
 import java.util.Currency;

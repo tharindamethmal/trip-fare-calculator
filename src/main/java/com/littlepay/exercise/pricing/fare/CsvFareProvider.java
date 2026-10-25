@@ -1,5 +1,6 @@
-package com.littlepay.exercise.pricing;
+package com.littlepay.exercise.pricing.fare;
 
+import com.littlepay.exercise.pricing.Money;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 
